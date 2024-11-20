@@ -14,7 +14,7 @@ services:
   mysql-container:
     image: mysql
     volumes:
-      - /Users/jincheng/code/mysql-data:/var/lib/mysql
+      - /Users/jincheng/mysql-data:/var/lib/mysql
     environment:
       MYSQL_DATABASE: meeting_room_booking_system
       MYSQL_ROOT_PASSWORD: 202411
@@ -23,7 +23,7 @@ services:
   redis-container:
     image: redis
     volumes:
-      - /Users/jincheng/code/redis-data:/data
+      - /Users/jincheng/redis-data:/data
     networks:
       - common-network
 networks:
