@@ -1,5 +1,13 @@
 version: '3.8'
 services:
+  fe-app:
+    image: registry.cn-chengdu.aliyuncs.com/react_2205/meeting-fe:test1
+    ports:
+      - 80:80
+    depends_on:
+      - nest-app
+    networks:
+      - common-network
   nest-app:
     build:
       context: ./
@@ -7,12 +15,10 @@ services:
     depends_on:
       - mysql-container
       - redis-container
-    ports:
-      - 3100:3100
+    # ports:
+    #   - 3100:3100
     networks:
       - common-network
-    env_file:
-      - .env
   mysql-container:
     image: mysql
     volumes:
