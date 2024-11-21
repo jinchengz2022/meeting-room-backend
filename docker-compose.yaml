@@ -18,7 +18,7 @@ services:
     volumes:
       - /Users/jincheng/mysql-data:/var/lib/mysql
     environment:
-      MYSQL_DATABASE: meeting_room_booking_system_backend
+      MYSQL_DATABASE: meeting_room_booking_system
       MYSQL_ROOT_PASSWORD: 202411
     networks:
       - common-network
