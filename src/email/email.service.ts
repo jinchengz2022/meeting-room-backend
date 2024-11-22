@@ -14,18 +14,19 @@ export class EmailService {
       port: this.configService.get('nodemailer_port'),
       secure: false,
       auth: {
-        user: this.configService.get('nodemailer_user'),
-        pass: this.configService.get('nodemailer_pass'),
+        user: this.configService.get('nodemailer_auth_user'),
+        pass: this.configService.get('nodemailer_auth_pass'),
       },
     });
   }
 
   async sendMail(params: { to: string; subject: string; html?: any }) {
     const { to, subject, html } = params;
+    
     await this.transporter.sendMail({
       from: {
-        name: '会议名称',
-        address: this.configService.get('nodemailer_user'),
+        name: '',
+        address: this.configService.get('nodemailer_auth_user'),
       },
       to,
       subject,

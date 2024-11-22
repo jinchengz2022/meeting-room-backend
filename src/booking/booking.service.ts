@@ -5,7 +5,7 @@ import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
 import { Booking } from './entities/booking.entity';
 import { EntityManager, LessThanOrEqual, Like, MoreThanOrEqual } from 'typeorm';
 import { User } from 'src/user/entities';
-import { MeetingRoom } from 'src/meeting-room/entities/meeting-room.entity';
+import { MeetingRoom } from '../meeting-room/entities/meeting-room.entity';
 
 @Injectable()
 export class BookingService {

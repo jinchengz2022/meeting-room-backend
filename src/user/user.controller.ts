@@ -11,6 +11,8 @@ import {
   UseInterceptors,
   UploadedFile,
   BadRequestException,
+  UseGuards,
+  Req,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -21,7 +23,7 @@ import { LoginDto } from './dto/login.dto';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { UserInfoVo } from './vo/user-info.vo';
-import { RequireLogin } from 'src/custom.decrator';
+import { RequireLogin, UserInfo } from 'src/custom.decrator';
 import { UpdatePasswordDTO } from './dto/update-password.dto';
 import { generateParseIntPipe } from 'src/utils/generateParseIntPipe';
 import {
@@ -35,10 +37,29 @@ import { LoginUserVo } from './vo/login.vo';
 import { FileInterceptor } from '@nestjs/platform-express';
 import * as path from 'path';
 import { storage } from 'src/my-file-storage';
+import { AuthGuard } from '@nestjs/passport';
 @ApiTags('用户管理模块')
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
+
+  @ApiBody({
+    type: CreateUserDto,
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: '验证码错误',
+    type: String,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: '成功',
+    type: String,
+  })
+  @Post('admin-register')
+  async adminRegister(@Body() createUserDto: CreateUserDto) {
+    return await this.userService.create(createUserDto, true);
+  }
 
   @ApiBody({
     type: CreateUserDto,
@@ -82,9 +103,10 @@ export class UserController {
     description: 'success',
     status: HttpStatus.OK,
   })
+  @UseGuards(AuthGuard('local'))
   @Post('login')
-  async login(@Body() loginDto: LoginDto) {
-    const vo = await this.userService.login(loginDto, false);
+  async login(@UserInfo() vo: LoginUserVo) {
+    // const vo = await this.userService.login(loginDto, false);
 
     vo.accessToken = this.jwtService.sign(
       {
@@ -110,6 +132,23 @@ export class UserController {
     );
 
     return vo;
+  }
+
+  @Get('google')
+  @UseGuards(AuthGuard('google'))
+  async googleAuth() {}
+
+  @Get('callback/google')
+  @UseGuards(AuthGuard('google'))
+  googleAuthRedirect(@Req() req) {
+    if(!req.user) {
+      return 'no user from google'
+    }
+
+    return {
+      message: 'user information from google',
+      user: req.user
+    }
   }
 
   @ApiBody({

@@ -1,13 +1,15 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { FormatReponseInterceptor } from './format-reponse.interceptor';
-import { InvokeRecordInterceptor } from './invoke-record.interceptor';
-import { UnloginFilter } from './unlogin.filter';
-import { CustomExceptionFilter } from './custom-exception.filter';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston'
+
+import { FormatReponseInterceptor } from './format-reponse.interceptor';
+import { InvokeRecordInterceptor } from './invoke-record.interceptor';
+import { AppModule } from './app.module';
+import { UnloginFilter } from './unlogin.filter';
+import { CustomExceptionFilter } from './custom-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -26,6 +28,8 @@ async function bootstrap() {
 
   app.useGlobalFilters(new UnloginFilter());
   app.useGlobalFilters(new CustomExceptionFilter());
+
+  app.useLogger(app.get(WINSTON_MODULE_PROVIDER))
 
   app.enableCors();
 

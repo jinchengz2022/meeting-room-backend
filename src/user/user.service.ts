@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   HttpException,
   HttpStatus,
   Inject,
@@ -32,8 +33,9 @@ export class UserService {
   @Inject(RedisService)
   private redisService: RedisService;
 
-  async create(user: CreateUserDto) {
+  async create(user: CreateUserDto, isAdmin?: boolean) {
     const captcha = await this.redisService.get(`captcha_${user.email}`);
+    
     if (!captcha) {
       throw new HttpException('验证码已失效', HttpStatus.BAD_REQUEST);
     }
@@ -50,11 +52,14 @@ export class UserService {
       throw new HttpException('该用户名已存在', HttpStatus.BAD_REQUEST);
     }
 
+    await this.redisService.delete(`captcha_${user.email}`);
+
     const newUser = new User();
     newUser.username = user.username;
     newUser.email = user.email;
     newUser.nickName = user.nickName;
     newUser.password = md5(user.password);
+    newUser.isAdmin = isAdmin ? true : false;
 
     try {
       await this.userRepository.save(newUser);
@@ -67,14 +72,15 @@ export class UserService {
 
   async initData() {
     const user1 = new User();
-    user1.username = 'asdf';
-    user1.password = md5('dsiofneo');
+    user1.username = 'lina';
+    user1.password = md5('123');
     user1.email = 'jinchengz@163.com';
     user1.nickName = 'gggg';
+    user1.isAdmin = true;
 
     const user2 = new User();
-    user2.username = 'dddd';
-    user2.password = md5('dsiofneo');
+    user2.username = 'zhangna';
+    user2.password = md5('123');
     user2.email = 'jinchengz@163.com';
     user2.nickName = 'wwwww';
 
@@ -219,18 +225,17 @@ export class UserService {
   }
 
   async update(updateDto: UpdateUserDto) {
-    try {
-      const captcha = await this.redisService.get(
-        `update_captcha_${updateDto.email}`,
-      );
+      // const captcha = await this.redisService.get(
+      //   `update_captcha_${updateDto.email}`,
+      // );
 
-      if (!captcha) {
-        throw new HttpException('验证码已失效', HttpStatus.BAD_REQUEST);
-      }
+      // if (!captcha) {
+      //   throw new BadRequestException('验证码已失效');
+      // }
 
-      if (captcha !== updateDto.captcha) {
-        throw new HttpException('验证码错误', HttpStatus.BAD_REQUEST);
-      }
+      // if (captcha !== updateDto.captcha) {
+      //   throw new BadRequestException('验证码错误');
+      // }
 
       const foundUser = await this.userRepository.findOne({
         where: {
@@ -243,6 +248,7 @@ export class UserService {
       foundUser.nickName = updateDto.nickName;
       foundUser.headPic = updateDto.headPic;
 
+    try {
       await this.userRepository.save(foundUser);
       return 'success';
     } catch (error) {
